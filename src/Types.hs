@@ -33,12 +33,12 @@ instance Randomizable ResidualBlockSpec ResidualBlock where
 data TransformerNetSpec = TransformerNetSpec {
   transSpec1 :: Conv2dSpec,
   transSpec2 :: Conv2dSpec,
-  transSpec3 :: Conv2dSpec
+  transSpec3 :: Conv2dSpec,
   resBlock1  :: ResidualBlockSpec,
   resBlock2  :: ResidualBlockSpec,
   resBlock3  :: ResidualBlockSpec,
   resBlock4  :: ResidualBlockSpec,
-  resBlock5  :: ResidualBlockSpec
+  resBlock5  :: ResidualBlockSpec,
   deconvSpec1 :: Conv2dSpec,
   deconvSpec2 :: Conv2dSpec,
   deconvSpec3 :: Conv2dSpec
@@ -47,12 +47,12 @@ data TransformerNet = TransformerNet
   {
     trans1  :: Conv2d,
     trans2  :: Conv2d,
-    trans3  :: Conv2d
+    trans3  :: Conv2d,
     res1    :: ResidualBlock,
     res2    :: ResidualBlock,
     res3    :: ResidualBlock,
     res4    :: ResidualBlock,
-    res5    :: ResidualBlock
+    res5    :: ResidualBlock,
     deconv1 :: UpsampleConvLayer,
     deconv2 :: UpsampleConvLayer,
     deconv3    :: Conv2d

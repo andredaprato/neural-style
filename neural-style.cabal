@@ -22,14 +22,15 @@ executable neural-style
 
   other-modules:       Types,
                        Vgg,
-                       Utils
+                       Utils,
+                       Mnist
 
   default-extensions:  DeriveGeneric,
                        RecordWildCards,
                        FlexibleContexts, 
-                       DeriveGeneric ,
-                       MultiParamTypeClasses ,
-                       DataKinds ,
+                       DeriveGeneric,
+                       MultiParamTypeClasses,
+                       DataKinds,
                        TypeApplications 
 
   build-depends:       base,
@@ -40,7 +41,8 @@ executable neural-style
                        libtorch-ffi >= 1.5,
                        JuicyPixels >= 3.3,
                        directory,
-                       streamly
+                       streamly,
+                       random
 
   hs-source-dirs:      src
    

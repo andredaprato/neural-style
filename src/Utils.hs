@@ -41,3 +41,46 @@ upsampleConvLayer kernelSize scale conv =
   where pad =  kernelSize `div` 2
 
 conv2dRelu conv stride padding = relu . conv2dForward conv stride padding
+
+vgg v@Vgg16{..} str pad =
+  -- linear l3 .
+  linear l2 . 
+  linear l1 .
+  flatten (Dim 1) (Dim (-1)) . 
+  adaptiveAvgPool2d (7,7) .
+  maxPool2d (2,2) (2,2) (0,0) (1,1) False .
+  conv2dRelu c13 str pad .
+  slice4' v .
+  slice3' v .
+  slice2' v .
+  slice1' v 
+
+-- https://github.com/pytorch/examples/blob/master/fast_neural_style/neural_style/vgg.py
+slice4 Vgg16{..} str pad= 
+  maxPool2d (2,2) (2,2) (0,0) (1,1) False . 
+  conv2dRelu c12 str pad .
+  conv2dRelu c11 str pad .
+  conv2dRelu c10 str pad 
+
+slice3 Vgg16{..} str pad=
+  conv2dRelu c9 str pad .
+  maxPool2d (2,2) (2,2) (0,0) (1,1) False . 
+  conv2dRelu c8 str pad .
+  conv2dRelu c7 str pad .
+  conv2dRelu c6 str pad 
+
+slice2 Vgg16{..} str pad=
+  conv2dRelu c5 str pad .
+  maxPool2d (2,2) (2,2) (0,0) (1,1) False . 
+  conv2dRelu c4 str pad .
+  conv2dRelu c3 str pad .
+  maxPool2d (2,2) (2,2) (0,0) (1,1) False  
+
+slice1 Vgg16{..} str pad=
+  conv2dRelu c2 str pad .
+  conv2dRelu c1 str pad
+  
+slice4' vgg = slice4 vgg (1,1) (1,1)
+slice3' vgg = slice3 vgg (1,1) (1,1)
+slice2' vgg = slice2 vgg (1,1) (1,1)
+slice1' vgg = slice1 vgg (1,1) (1,1)
