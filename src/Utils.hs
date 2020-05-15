@@ -23,6 +23,14 @@ upsample_nearest2d _self _output_size _scales_h _scales_w =
   unsafePerformIO $ (cast4 ATen.upsample_nearest2d_tldd) _self
   _output_size _scales_h _scales_w
 
+upsample_bilinear2d
+  :: Tensor -- ^ self
+  -> [Int]  -- ^ output_size
+  -> Bool -- ^ align_corners
+  -> Double -- ^ scales_h
+  -> Double -- ^ scales_w
+  -> Tensor
+upsample_bilinear2d _self _output_size _align_corners _scales_h _scales_w = unsafePerformIO $ (cast5 ATen.upsample_bilinear2d_tlbdd) _self _output_size _align_corners _scales_h _scales_w
 convLayer kernelSize conv =
   -- flip reflection_pad2d (padding,padding,padding,padding) . conv2dForward conv (2, 2) (1,1)
   -- flip reflection_pad1d (padding,padding) . conv2dForward conv (2, 2) (1,1)
@@ -32,7 +40,7 @@ convLayer kernelSize conv =
 residualBlock ResidualBlock{..} t =
   (relu  . convLayer 3 block1) t +  (relu . convLayer 3 block2) t
 
-upsample size scale1 scale2 tensor =  upsample_nearest2d tensor size scale1 scale2 
+upsample size scale1 scale2 tensor =  upsample_bilinear2d tensor size True scale1 scale2 
 
 upsampleConvLayer kernelSize scale conv =
   -- conv2dForward (2, 2) (1,1) . upsample_nearest2d 0 scale . flip reflection_pad2d (pad, pad, pad, pad)  
