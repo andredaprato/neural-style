@@ -1,0 +1,21 @@
+* DONE understand their vgg net
+CLOSED: [2020-05-12 Tue 15:28]
+** DONE named tuple
+CLOSED: [2020-05-12 Tue 13:55]
+** DONE add_module
+CLOSED: [2020-05-12 Tue 13:55]
+** DONE .features
+CLOSED: [2020-05-12 Tue 15:26]
+* TODO batch normalization/instance normalization (might have to ask)
+* TODO forward method of transformer net
+** TODO UpsampleConvLayer
+** 
+* TODO read through cs231n convolutional network article
+-https://cs231n.github.io/convolutional-networks/
+* questions
+- Functional with tuple arguments, what do we do about this in general?
+- Image preprocessing?
+- I'd be happy to, but I think I need to shift my focus a little. The neural
+  style example is giving me some pain, since I need to transfer weights from a
+  pretrained pytorch model and preprocessing was more annoying than I thought
+  it'd be. 
