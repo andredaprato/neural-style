@@ -12,7 +12,7 @@
 
 int main(int argc, const char* argv[]) {
   if (argc != 2) {
-    std::cerr << "usage: alexnet <path-to-exported-script-module>\n";
+    std::cerr << "usage: vgg <path-to-exported-script-module>\n";
     return -1;
   }
 

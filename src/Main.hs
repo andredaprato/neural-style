@@ -65,6 +65,7 @@ gramStyle params style = gramSlice params (1,1) (1,1) style
 
 gramSlice ::  Vgg16 -> (Int,Int) -> (Int,Int) -> Tensor -> [Tensor]
 gramSlice  vgg str pad t = fmap gramMatrix $  [slice1  , slice2 , slice3, slice4] <*> pure vgg <*> pure str <*> pure pad <*> pure t 
+-- gramSlice  vgg str pad t = fmap gramMatrix $  (t . str . pad . vgg) <$> [slice1  , slice2 , slice3, slice4] 
   
 mkAdam lr = Adam {
   beta1 = 0.9,

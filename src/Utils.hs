@@ -51,7 +51,7 @@ upsampleConvLayer kernelSize scale conv =
 conv2dRelu conv stride padding = relu . conv2dForward conv stride padding
 
 vgg v@Vgg16{..} str pad =
-  -- linear l3 .
+  linear l3 .
   linear l2 . 
   linear l1 .
   flatten (Dim 1) (Dim (-1)) . 
@@ -62,6 +62,18 @@ vgg v@Vgg16{..} str pad =
   slice3' v .
   slice2' v .
   slice1' v 
+vggNoFinal v@Vgg16{..} str pad =
+  linear l2 . 
+  linear l1  .
+  flatten (Dim 1) (Dim (-1)) . 
+  adaptiveAvgPool2d (7,7) .
+  maxPool2d (2,2) (2,2) (0,0) (1,1) False  .
+  conv2dRelu c13 str pad .
+  slice4' v .
+  slice3' v .
+  slice2' v .
+  slice1' v 
+  
 
 -- https://github.com/pytorch/examples/blob/master/fast_neural_style/neural_style/vgg.py
 slice4 Vgg16{..} str pad= 
