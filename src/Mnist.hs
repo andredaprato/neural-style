@@ -12,6 +12,8 @@ import qualified Torch.Typed.Vision as V hiding (getImages')
 import           Torch.Serialize as S
 import GHC.Generics
 
+import qualified Pipes as P
+import qualified Pipes.Concurrent as P
 
 randomIndexes :: Int -> [Int]
 randomIndexes size = (`mod` size) <$> randoms seed where seed = mkStdGen 123
@@ -47,8 +49,9 @@ mlp MLP{..} input =
     . linear l0
     $ input
 
+  
 normalize :: Int -> Tensor -> Tensor
-normalize batchSize img =( (img / asTensor (255 :: Float)) - (myMean batchSize)) / (myStd batchSize)
+normalize batchSize img = (img / asTensor (255 :: Float) - mean) / std 
   where
     mean = cat (Dim 1) $  full' [batchSize,1,224,224] <$> [0.485 :: Float, 0.456, 0.406]
     std = cat (Dim 1) $  full' [batchSize,1,224,224] <$> [0.229 :: Float, 0.224, 0.225]

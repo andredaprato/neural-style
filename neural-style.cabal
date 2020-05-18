@@ -41,8 +41,9 @@ executable neural-style
                        libtorch-ffi >= 1.5,
                        JuicyPixels >= 3.3,
                        directory,
-                       streamly,
-                       random
+                       random,
+                       pipes,
+                       pipes-concurrency
 
   hs-source-dirs:      src
    
