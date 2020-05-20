@@ -53,16 +53,20 @@ mlp MLP{..} input =
 
   
 normalize :: Int -> Tensor -> Tensor
-normalize batchSize img = (img / asTensor (255 :: Float) - mean) / std 
-  where
-    mean = cat (Dim 1) $  full' [batchSize,1,224,224] <$> [0.485 :: Float, 0.456, 0.406]
-    std = cat (Dim 1) $  full' [batchSize,1,224,224] <$> [0.229 :: Float, 0.224, 0.225]
+normalize batchSize img = img / asTensor (255 :: Float) 
+-- normalize batchSize img = (img / asTensor (255 :: Float) - mean) / std 
+--   where
+--     mean = cat (Dim 1) $  full' [batchSize,1,224,224] <$> [0.485 :: Float, 0.456, 0.406]
+--     std = cat (Dim 1) $  full' [batchSize,1,224,224] <$> [0.229 :: Float, 0.224, 0.225]
 
 resizeImage batchSize img = expand upsampled  True [batchSize, 3,224,224] 
   where upsampled = upsample [224,224] 0 0 $ reshape [batchSize,1,28,28] img
 
 finalLayer :: LinearSpec
 finalLayer = LinearSpec 4096 10
+
+forward :: Vgg16 -> Linear -> Tensor ->  Tensor
+forward vggParams state img = logSoftmax (Dim 1) $ linear state $ vggNoFinal vggParams (1,1) (1,1) img 
 
 train :: Vgg16 -> V.MnistData -> IO Linear
 train vggParams trainData = do
@@ -76,7 +80,7 @@ train vggParams trainData = do
             input <- V.getImages' batchSize dataDim trainData idx
             let rszd = normalize batchSize $ resizeImage batchSize input
                 label = V.getLabels' batchSize trainData idx
-                loss = nllLoss' label $  logSoftmax (Dim 1) $ linear state $ vggNoFinal vggParams (1,1) (1,1) rszd
+                loss = nllLoss' label $  forward vggParams state rszd
             when (iter `mod` 50 == 0) $ do
                 putStrLn $ "Iteration: " ++ show iter ++ " | Loss: " ++ show loss
             (newParam, _) <- runStep state optimizer loss 1e-3
@@ -85,7 +89,7 @@ train vggParams trainData = do
     where
       -- spec = MLPSpec (224 * 224) 64 32 10
       dataDim = 784
-      numIters = 100
+      numIters = 3000
       batchSize = 12 
       optimizer = GD
 
@@ -98,16 +102,14 @@ mnistMain = do
     vggRand <- sample vggSpec 
     vggParams <- S.loadParams vggRand "build/vgg16.pt" 
     model <- train vggParams trainData
-  
-
     mapM (\idx -> do
         testImg <- V.getImages' 1 784 testData [idx]
         V.dispImage testImg
         let rszd = normalize 1 $ resizeImage 1 testImg
         putStrLn $ "Model        : " ++ (show . (argmax (Dim 1) RemoveDim) .
                                          Torch.exp .
-                                         logSoftmax (Dim 1) .
-                                         linear model $ vggNoFinal vggParams (1,1) (1,1) rszd)
+                                         forward vggParams model rszd
+                                        )
         -- putStrLn $ "Model        : " ++ (show . (argmax (Dim 1) RemoveDim) .
         --                                  Torch.exp $
         --                                  mlp model rszd)
