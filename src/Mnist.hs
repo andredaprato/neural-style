@@ -1,7 +1,7 @@
 module Mnist where
 
 import Torch
-import Control.Monad (when)
+import Control.Monad (when, forM_)
 import System.Random (mkStdGen, randoms)
 
 import Torch.Functional as F
@@ -11,7 +11,9 @@ import qualified Torch.Vision as V
 import qualified Torch.Typed.Vision as V hiding (getImages')
 import           Torch.Serialize as S
 import GHC.Generics
+import qualified Codec.Picture as I
 
+import Pipes ((>->))
 import qualified Pipes as P
 import qualified Pipes.Concurrent as P
 
@@ -83,8 +85,8 @@ train vggParams trainData = do
     where
       -- spec = MLPSpec (224 * 224) 64 32 10
       dataDim = 784
-      numIters = 3000
-      batchSize = 8 
+      numIters = 100
+      batchSize = 12 
       optimizer = GD
 
 
@@ -93,15 +95,15 @@ mnistMain :: IO ()
 mnistMain = do
     (trainData, testData) <- V.initMnist "data"
 
-    img <- V.getImages' 1 784 trainData [1]
-    model <- sample vggSpec 
-    vggParams <- S.loadParams model "build/vgg16.pt" 
+    vggRand <- sample vggSpec 
+    vggParams <- S.loadParams vggRand "build/vgg16.pt" 
     model <- train vggParams trainData
+  
 
     mapM (\idx -> do
         testImg <- V.getImages' 1 784 testData [idx]
         V.dispImage testImg
-        let rszd = resizeImage 1 testImg
+        let rszd = normalize 1 $ resizeImage 1 testImg
         putStrLn $ "Model        : " ++ (show . (argmax (Dim 1) RemoveDim) .
                                          Torch.exp .
                                          logSoftmax (Dim 1) .

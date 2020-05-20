@@ -31,6 +31,7 @@ upsample_bilinear2d
   -> Double -- ^ scales_w
   -> Tensor
 upsample_bilinear2d _self _output_size _align_corners _scales_h _scales_w = unsafePerformIO $ (cast5 ATen.upsample_bilinear2d_tlbdd) _self _output_size _align_corners _scales_h _scales_w
+
 convLayer kernelSize conv =
   -- flip reflection_pad2d (padding,padding,padding,padding) . conv2dForward conv (2, 2) (1,1)
   -- flip reflection_pad1d (padding,padding) . conv2dForward conv (2, 2) (1,1)
@@ -41,6 +42,7 @@ residualBlock ResidualBlock{..} t =
   (relu  . convLayer 3 block1) t +  (relu . convLayer 3 block2) t
 
 upsample size scale1 scale2 tensor =  upsample_bilinear2d tensor size True scale1 scale2 
+-- upsample size scale1 scale2 tensor =  upsample_nearest2d tensor size scale1 scale2 
 
 upsampleConvLayer kernelSize scale conv =
   -- conv2dForward (2, 2) (1,1) . upsample_nearest2d 0 scale . flip reflection_pad2d (pad, pad, pad, pad)  
@@ -52,18 +54,14 @@ conv2dRelu conv stride padding = relu . conv2dForward conv stride padding
 
 vgg v@Vgg16{..} str pad =
   linear l3 .
-  linear l2 . 
-  linear l1 .
-  flatten (Dim 1) (Dim (-1)) . 
-  adaptiveAvgPool2d (7,7) .
-  maxPool2d (2,2) (2,2) (0,0) (1,1) False .
-  conv2dRelu c13 str pad .
-  slice4' v .
-  slice3' v .
-  slice2' v .
-  slice1' v 
+  vggNoFinal v str pad .
+  relu
+
 vggNoFinal v@Vgg16{..} str pad =
+  -- TODO relu or not?
+  -- relu . 
   linear l2 . 
+  relu . 
   linear l1  .
   flatten (Dim 1) (Dim (-1)) . 
   adaptiveAvgPool2d (7,7) .
@@ -77,15 +75,15 @@ vggNoFinal v@Vgg16{..} str pad =
 
 -- https://github.com/pytorch/examples/blob/master/fast_neural_style/neural_style/vgg.py
 slice4 Vgg16{..} str pad= 
-  maxPool2d (2,2) (2,2) (0,0) (1,1) False . 
   conv2dRelu c12 str pad .
   conv2dRelu c11 str pad .
+  maxPool2d (2,2) (2,2) (0,0) (1,1) False . 
   conv2dRelu c10 str pad 
 
 slice3 Vgg16{..} str pad=
   conv2dRelu c9 str pad .
-  maxPool2d (2,2) (2,2) (0,0) (1,1) False . 
   conv2dRelu c8 str pad .
+  maxPool2d (2,2) (2,2) (0,0) (1,1) False . 
   conv2dRelu c7 str pad .
   conv2dRelu c6 str pad 
 
